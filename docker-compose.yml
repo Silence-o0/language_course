@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - ./:/language_course/
+    ports:
+      - 5430:5432
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_USER=USER
+      - POSTGRES_PASSWORD=BESTPASSWORD
+      - POSTGRES_DB=lang_course_db
