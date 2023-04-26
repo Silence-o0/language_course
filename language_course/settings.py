@@ -87,7 +87,7 @@ DATABASES = {
         'USER': os.environ['POSTGRES_USER'],
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': os.environ['DB_HOST'],
-        'PORT': 5430,
+        'PORT': 5432,
     }
 }
 
