@@ -17,9 +17,15 @@ class TeacherProfile(Profile):
     education = models.CharField(max_length=100)
     years_experience = models.PositiveIntegerField()
 
+    def __str__(self):
+        return str(self.user)
+
 
 class Language(models.Model):
     name = models.CharField(max_length=38)
+
+    def __str__(self):
+        return str(self.name)
 
 
 class Group(models.Model):
@@ -34,6 +40,9 @@ class Group(models.Model):
     teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     lang_level = models.CharField(max_length=2, choices=LANG_LEVEL)
+
+    def __str__(self):
+        return f'{self.language} {self.lang_level}'
 
 
 class Lesson(models.Model):
@@ -51,13 +60,22 @@ class Lesson(models.Model):
     time_start = models.TimeField(auto_now=False, auto_now_add=False)
     time_finish = models.TimeField(auto_now=False, auto_now_add=False)
 
+    def __str__(self):
+        return str(self.group)
+
 
 class AdminProfile(Profile):
     position = models.CharField(max_length=30)
 
+    def __str__(self):
+        return str(self.user)
+
 
 class StudentProfile(Profile):
     members = models.ManyToManyField(Group, through="GroupMembership")
+
+    def __str__(self):
+        return str(self.user)
 
 
 class GroupMembership(models.Model):
@@ -69,3 +87,6 @@ class Mark(models.Model):
     group_membership = models.ForeignKey(GroupMembership, on_delete=models.CASCADE)
     mark = models.PositiveIntegerField()
     description = models.CharField(max_length=120)
+
+    def __str__(self):
+        return f'{self.group_membership.student} {self.mark}'

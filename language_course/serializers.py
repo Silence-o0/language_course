@@ -2,6 +2,9 @@ from rest_framework import serializers
 
 from course.models import *
 
+__all__ = ['TeacherProfileSerializer', 'AdminProfileSerializer', 'StudentProfileSerializer',
+           'GroupSerializer', 'LanguageSerializer', 'LessonSerializer', 'MarkSerializer']
+
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
     class Meta:
