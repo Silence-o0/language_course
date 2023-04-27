@@ -1,7 +1,6 @@
 from django.contrib import admin
 
-from course.models import TeacherProfile, AdminProfile, StudentProfile, Language, \
-    Group, Lesson, GroupMembership, Mark
+from course.models import *
 
 admin.site.register(TeacherProfile)
 admin.site.register(AdminProfile)
