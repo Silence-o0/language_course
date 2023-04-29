@@ -134,15 +134,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'SWAGGER_UI_SETTINGS': {
-        'deepLinking': True,
-    },
-    'SWAGGER_UI_OAUTH2_CONFIG': {},
-    'SWAGGER_UI_DIST': 'SIDECAR',
-    'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
-    'TITLE': 'Language course',
-    'DESCRIPTION': 'Language courses API',
-    'VERSION': '1.0.0',
+    'TITLE': 'Language courses API',
+    'VERSION': '0.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
-    'COMPONENT_SPLIT_REQUEST': True,
 }

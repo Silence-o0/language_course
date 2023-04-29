@@ -45,4 +45,4 @@ class LessonSerializer(serializers.ModelSerializer):
 class MarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mark
-        fields = '__all__'
+        fields = ('id', 'mark', 'description')
