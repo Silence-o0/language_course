@@ -1,3 +1,4 @@
+from django.contrib.auth import admin
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -73,7 +74,7 @@ class AdminProfile(Profile):
 
 
 class StudentProfile(Profile):
-    members = models.ManyToManyField(Group, through="GroupMembership")
+    groups = models.ManyToManyField(Group, through="GroupMembership")
 
     def __str__(self):
         return str(self.user)
