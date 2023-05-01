@@ -7,15 +7,16 @@ __all__ = ['Profile', 'TeacherProfile', 'AdminProfile', 'StudentProfile', 'Group
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    birth_date = models.DateField(auto_now=False, auto_now_add=False, null=True)
+    birth_date = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True,
+                                  help_text='Please use the following format: <em>YYYY-MM-DD</em>.')
 
     class Meta:
         abstract = True
 
 
 class TeacherProfile(Profile):
-    education = models.CharField(max_length=100, null=True)
-    years_experience = models.PositiveIntegerField(null=True)
+    education = models.CharField(max_length=100, null=True, blank=True)
+    years_experience = models.PositiveIntegerField(null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
@@ -37,7 +38,7 @@ class Group(models.Model):
         ("C1", "C1"),
         ("C2", "C2"),
     ]
-    teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE, null=True)
+    teacher = models.ForeignKey(TeacherProfile, on_delete=models.SET_NULL, blank=True, null=True)
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     lang_level = models.CharField(max_length=2, choices=LANG_LEVEL)
 
@@ -65,7 +66,7 @@ class Lesson(models.Model):
 
 
 class AdminProfile(Profile):
-    position = models.CharField(max_length=30, null=True)
+    position = models.CharField(max_length=30, null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
@@ -86,7 +87,7 @@ class GroupMembership(models.Model):
 class Mark(models.Model):
     group_membership = models.ForeignKey(GroupMembership, on_delete=models.CASCADE)
     mark = models.PositiveIntegerField()
-    description = models.CharField(max_length=120, null=True)
+    description = models.CharField(max_length=120, null=True, blank=True)
 
     def __str__(self):
         return f'{self.group_membership.student} {self.mark}'
