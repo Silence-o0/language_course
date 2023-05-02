@@ -36,19 +36,15 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
 
     def get_queryset(self):
-        if len(self.request.query_params) < 2:
-            teach_id = self.request.query_params.get('teacher_id')
-            lang_id = self.request.query_params.get('language_id')
-            stud_id = self.request.query_params.get('student_id')
-            if teach_id is not None:
-                return Group.objects.filter(teacher_id=teach_id)
-            elif lang_id is not None:
-                return Group.objects.filter(language_id=lang_id)
-            if stud_id is not None:
-                return Group.objects.filter(studentprofile__id=stud_id)
-            return Group.objects.all()
-        else:
-            return None
+        query_params = self.request.query_params
+        queryset = Group.objects.all()
+        if teach_id := query_params.get('teacher_id'):
+            queryset = queryset.filter(teacher_id=teach_id)
+        if lang_id := query_params.get('language_id'):
+            queryset = queryset.filter(language_id=lang_id)
+        if stud_id := query_params.get('student_id'):
+            queryset = queryset.filter(studentprofile__id=stud_id)
+        return queryset
 
     @action(detail=True, methods=['post'])
     def assign_student_to_group(self, request, *args, **kwargs):
@@ -65,7 +61,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['delete'], url_path=r'remove_student_from_group/(?P<student_id>\w+)')
-    def remove_student_from_group(self, request,  *args, **kwargs):
+    def remove_student_from_group(self, request, *args, **kwargs):
         group = self.get_object()
         student_id = kwargs.get('student_id')
 
@@ -86,20 +82,33 @@ class LanguageViewSet(viewsets.ModelViewSet):
     list=extend_schema(
         parameters=[
             OpenApiParameter(
+                name='teacher_id',
+                type=OpenApiTypes.INT,
+            ),
+            OpenApiParameter(
                 name='group_id',
                 type=OpenApiTypes.INT,
             ),
+            OpenApiParameter(
+                name='student_id',
+                type=OpenApiTypes.INT,
+            ),
         ],
-    )
+    ),
 )
 class LessonViewSet(viewsets.ModelViewSet):
     serializer_class = LessonSerializer
 
     def get_queryset(self):
-        gr_id = self.request.query_params.get('group_id')
-        if gr_id is not None:
-            return Lesson.objects.filter(group_id=gr_id)
-        return Lesson.objects.all()
+        query_params = self.request.query_params
+        queryset = Lesson.objects.all()
+        if teach_id := query_params.get('teacher_id'):
+            queryset = queryset.filter(group__teacher_id=teach_id)
+        if gr_id := query_params.get('group_id'):
+            queryset = queryset.filter(group_id=gr_id)
+        if stud_id := query_params.get('student_id'):
+            queryset = queryset.filter(group__groupmembership__student_id=stud_id)
+        return queryset
 
 
 @extend_schema_view(
@@ -128,6 +137,7 @@ class MarkViewSet(viewsets.ModelViewSet):
     ),
 )
 class TeacherProfileViewSet(viewsets.ModelViewSet):
+    queryset = TeacherProfile.objects.all()
     serializer_class = TeacherProfileSerializer
 
     def create(self, request, *args, **kwargs):
@@ -144,6 +154,7 @@ class TeacherProfileViewSet(viewsets.ModelViewSet):
     ),
 )
 class AdminProfileViewSet(viewsets.ModelViewSet):
+    queryset = AdminProfile.objects.all()
     serializer_class = AdminProfileSerializer
 
     def create(self, request, *args, **kwargs):
@@ -168,6 +179,7 @@ class AdminProfileViewSet(viewsets.ModelViewSet):
     ),
 )
 class StudentProfileViewSet(viewsets.ModelViewSet):
+    queryset = StudentProfile.objects.all()
     serializer_class = StudentProfileSerializer
 
     def get_queryset(self):
