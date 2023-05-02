@@ -1,3 +1,4 @@
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -92,8 +93,7 @@ class StudentIdSerializer(serializers.ModelSerializer):
         fields = ('id',)
 
 
-class UserRegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
+class UserRegisterSerializer(UserCreateSerializer):
+    class Meta(UserCreateSerializer.Meta):
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 

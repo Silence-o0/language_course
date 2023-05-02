@@ -1,3 +1,4 @@
+from django.core.mail import send_mail
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter, extend_schema_view, extend_schema_field, \
     extend_schema_serializer, OpenApiExample
@@ -6,6 +7,8 @@ from rest_framework.decorators import action
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from course.models import *
 from course.serializers import *
