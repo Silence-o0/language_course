@@ -36,16 +36,19 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
 
     def get_queryset(self):
-        teach_id = self.request.query_params.get('teacher_id')
-        lang_id = self.request.query_params.get('language_id')
-        stud_id = self.request.query_params.get('student_id')
-        if teach_id is not None:
-            return Group.objects.filter(teacher_id=teach_id)
-        elif lang_id is not None:
-            return Group.objects.filter(language_id=lang_id)
-        if stud_id is not None:
-            return Group.objects.filter(studentprofile__id=stud_id)
-        return Group.objects.all()
+        if len(self.request.query_params) < 2:
+            teach_id = self.request.query_params.get('teacher_id')
+            lang_id = self.request.query_params.get('language_id')
+            stud_id = self.request.query_params.get('student_id')
+            if teach_id is not None:
+                return Group.objects.filter(teacher_id=teach_id)
+            elif lang_id is not None:
+                return Group.objects.filter(language_id=lang_id)
+            if stud_id is not None:
+                return Group.objects.filter(studentprofile__id=stud_id)
+            return Group.objects.all()
+        else:
+            return None
 
     @action(detail=True, methods=['post'])
     def assign_student_to_group(self, request, *args, **kwargs):
@@ -119,14 +122,36 @@ class MarkViewSet(viewsets.ModelViewSet):
         return Mark.objects.all()
 
 
+@extend_schema_view(
+    create=extend_schema(
+        request=TeacherProfileRequestSerializer,
+    ),
+)
 class TeacherProfileViewSet(viewsets.ModelViewSet):
-    queryset = TeacherProfile.objects.all()
     serializer_class = TeacherProfileSerializer
 
+    def create(self, request, *args, **kwargs):
+        serializer_class = TeacherProfileRequestSerializer(data=request.data)
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@extend_schema_view(
+    create=extend_schema(
+        request=AdminProfileRequestSerializer,
+    ),
+)
 class AdminProfileViewSet(viewsets.ModelViewSet):
-    queryset = AdminProfile.objects.all()
     serializer_class = AdminProfileSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer_class = AdminProfileRequestSerializer(data=request.data)
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema_view(
@@ -137,7 +162,10 @@ class AdminProfileViewSet(viewsets.ModelViewSet):
                 type=OpenApiTypes.INT,
             ),
         ],
-    )
+    ),
+    create=extend_schema(
+        request=StudentProfileRequestSerializer,
+    ),
 )
 class StudentProfileViewSet(viewsets.ModelViewSet):
     serializer_class = StudentProfileSerializer
@@ -147,3 +175,10 @@ class StudentProfileViewSet(viewsets.ModelViewSet):
         if gr_id is not None:
             return StudentProfile.objects.filter(groups__id=gr_id)
         return StudentProfile.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer_class = StudentProfileRequestSerializer(data=request.data)
+        if serializer_class.is_valid():
+            serializer_class.save()
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)

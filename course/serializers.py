@@ -4,7 +4,8 @@ from course.models import *
 
 __all__ = ['TeacherProfileSerializer', 'AdminProfileSerializer', 'StudentProfileSerializer',
            'GroupSerializer', 'LanguageSerializer', 'LessonSerializer', 'MarkSerializer',
-           'StudentIdSerializer']
+           'StudentIdSerializer', 'StudentProfileRequestSerializer', 'AdminProfileRequestSerializer',
+           'TeacherProfileRequestSerializer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
@@ -40,6 +41,24 @@ class StudentProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class StudentProfileRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = '__all__'
+
+
+class AdminProfileRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdminProfile
+        fields = '__all__'
+
+
+class TeacherProfileRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeacherProfile
+        fields = '__all__'
+
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
@@ -70,3 +89,4 @@ class StudentIdSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
         fields = ('id',)
+
