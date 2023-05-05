@@ -7,13 +7,13 @@ from course.models import *
 __all__ = ['TeacherProfileSerializer', 'AdminProfileSerializer', 'StudentProfileSerializer',
            'GroupSerializer', 'LanguageSerializer', 'LessonSerializer', 'MarkSerializer',
            'StudentIdSerializer', 'StudentProfileRequestSerializer', 'AdminProfileRequestSerializer',
-           'TeacherProfileRequestSerializer']
+           'TeacherProfileRequestSerializer', 'StudentUpdateSerializer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
-    username = serializers.EmailField(source="user.username")
-    first_name = serializers.EmailField(source="user.first_name")
-    last_name = serializers.EmailField(source="user.last_name")
+    username = serializers.CharField(source="user.username")
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
     email = serializers.EmailField(source="user.email")
 
     class Meta:
@@ -22,9 +22,9 @@ class TeacherProfileSerializer(serializers.ModelSerializer):
 
 
 class AdminProfileSerializer(serializers.ModelSerializer):
-    username = serializers.EmailField(source="user.username")
-    first_name = serializers.EmailField(source="user.first_name")
-    last_name = serializers.EmailField(source="user.last_name")
+    username = serializers.CharField(source="user.username")
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
     email = serializers.EmailField(source="user.email")
 
     class Meta:
@@ -33,10 +33,10 @@ class AdminProfileSerializer(serializers.ModelSerializer):
 
 
 class StudentProfileSerializer(serializers.ModelSerializer):
-    username = serializers.EmailField(source="user.username")
-    first_name = serializers.EmailField(source="user.first_name")
-    last_name = serializers.EmailField(source="user.last_name")
-    email = serializers.EmailField(source="user.email")
+    username = serializers.CharField(source="user.username", read_only=True)
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+    email = serializers.EmailField(source="user.email", read_only=True)
 
     class Meta:
         model = StudentProfile
@@ -97,3 +97,8 @@ class UserRegisterSerializer(UserCreateSerializer):
     class Meta(UserCreateSerializer.Meta):
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 
+
+class UserUpdateSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = ('username', 'first_name', 'last_name', 'email')
+        read_only_fields = ('username', 'email')

@@ -138,21 +138,25 @@ class MarkViewSet(viewsets.ModelViewSet):
     create=extend_schema(
         request=TeacherProfileRequestSerializer,
     ),
+    update=extend_schema(
+        request=TeacherProfileRequestSerializer,
+    ),
 )
 class TeacherProfileViewSet(viewsets.ModelViewSet):
     queryset = TeacherProfile.objects.all()
     serializer_class = TeacherProfileSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer_class = TeacherProfileRequestSerializer(data=request.data)
-        if serializer_class.is_valid():
-            serializer_class.save()
-            return Response(status=status.HTTP_201_CREATED)
-        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return TeacherProfileRequestSerializer
+        return TeacherProfileRequestSerializer
 
 
 @extend_schema_view(
     create=extend_schema(
+        request=AdminProfileRequestSerializer,
+    ),
+    update=extend_schema(
         request=AdminProfileRequestSerializer,
     ),
 )
@@ -160,12 +164,10 @@ class AdminProfileViewSet(viewsets.ModelViewSet):
     queryset = AdminProfile.objects.all()
     serializer_class = AdminProfileSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer_class = AdminProfileRequestSerializer(data=request.data)
-        if serializer_class.is_valid():
-            serializer_class.save()
-            return Response(status=status.HTTP_201_CREATED)
-        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return AdminProfileRequestSerializer
+        return AdminProfileSerializer
 
 
 @extend_schema_view(
@@ -180,6 +182,9 @@ class AdminProfileViewSet(viewsets.ModelViewSet):
     create=extend_schema(
         request=StudentProfileRequestSerializer,
     ),
+    update=extend_schema(
+        request=StudentProfileRequestSerializer,
+    ),
 )
 class StudentProfileViewSet(viewsets.ModelViewSet):
     queryset = StudentProfile.objects.all()
@@ -191,9 +196,7 @@ class StudentProfileViewSet(viewsets.ModelViewSet):
             return StudentProfile.objects.filter(groups__id=gr_id)
         return StudentProfile.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        serializer_class = StudentProfileRequestSerializer(data=request.data)
-        if serializer_class.is_valid():
-            serializer_class.save()
-            return Response(status=status.HTTP_201_CREATED)
-        return Response(serializer_class.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'update':
+            return StudentProfileRequestSerializer
+        return StudentProfileSerializer
