@@ -7,7 +7,7 @@ from course.models import *
 __all__ = ['TeacherProfileSerializer', 'AdminProfileSerializer', 'StudentProfileSerializer',
            'GroupSerializer', 'LanguageSerializer', 'LessonSerializer', 'MarkSerializer',
            'StudentIdSerializer', 'StudentProfileRequestSerializer', 'AdminProfileRequestSerializer',
-           'TeacherProfileRequestSerializer', 'StudentUpdateSerializer']
+           'TeacherProfileRequestSerializer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):

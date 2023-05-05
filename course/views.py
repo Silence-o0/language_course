@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from course.models import *
+from course.policy import *
 from course.serializers import *
 
 
@@ -37,15 +38,22 @@ from course.serializers import *
 )
 class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = GroupSerializer
+    permission_classes = (GroupAccessPolicy,)
 
     def get_queryset(self):
+        user = self.request.user
         query_params = self.request.query_params
         queryset = Group.objects.all()
+        if user.groups.filter(name="student").exists():
+            queryset = queryset.filter(groupmembership__student__user=user)
         if teach_id := query_params.get('teacher_id'):
             queryset = queryset.filter(teacher_id=teach_id)
         if lang_id := query_params.get('language_id'):
             queryset = queryset.filter(language_id=lang_id)
         if stud_id := query_params.get('student_id'):
+            if user.groups.filter(name="student").exists():
+                if int(user.studentprofile.id) != int(stud_id):
+                    return None
             queryset = queryset.filter(studentprofile__id=stud_id)
         return queryset
 
@@ -79,6 +87,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class LanguageViewSet(viewsets.ModelViewSet):
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
+    permission_classes = (LanguageAccessPolicy,)
 
 
 @extend_schema_view(
@@ -101,15 +110,27 @@ class LanguageViewSet(viewsets.ModelViewSet):
 )
 class LessonViewSet(viewsets.ModelViewSet):
     serializer_class = LessonSerializer
+    permission_classes = (LessonAccessPolicy,)
 
     def get_queryset(self):
+        user = self.request.user
         query_params = self.request.query_params
         queryset = Lesson.objects.all()
+        if user.groups.filter(name="student").exists():
+            queryset = queryset.filter(group__groupmembership__student__user=user)
+        elif user.groups.filter(name="teacher").exists():
+            queryset = queryset.filter(group__teacher__user=user)
         if teach_id := query_params.get('teacher_id'):
+            if user.groups.filter(name="teacher").exists():
+                if int(user.teacherprofile.id) != int(teach_id):
+                    return None
             queryset = queryset.filter(group__teacher_id=teach_id)
         if gr_id := query_params.get('group_id'):
             queryset = queryset.filter(group_id=gr_id)
         if stud_id := query_params.get('student_id'):
+            if user.groups.filter(name="student").exists():
+                if int(user.studentprofile.id) != int(stud_id):
+                    return None
             queryset = queryset.filter(group__groupmembership__student_id=stud_id)
         return queryset
 
@@ -126,12 +147,18 @@ class LessonViewSet(viewsets.ModelViewSet):
 )
 class MarkViewSet(viewsets.ModelViewSet):
     serializer_class = MarkSerializer
+    permission_classes = (MarkAccessPolicy,)
 
     def get_queryset(self):
-        stud_id = self.request.query_params.get('student_id')
-        if stud_id is not None:
-            return Mark.objects.filter(group_membership__student_id=stud_id)
-        return Mark.objects.all()
+        user = self.request.user
+        queryset = Mark.objects.all()
+        if user.groups.filter(name="student").exists():
+            queryset = queryset.filter(group_membership__student__user=user)
+        elif user.groups.filter(name="teacher").exists():
+            queryset = queryset.filter(group_membership__group__teacher__user=user)
+        if stud_id := self.request.query_params.get("student_id"):
+            queryset = queryset.filter(group_membership__student_id=stud_id)
+        return queryset
 
 
 @extend_schema_view(
@@ -145,11 +172,12 @@ class MarkViewSet(viewsets.ModelViewSet):
 class TeacherProfileViewSet(viewsets.ModelViewSet):
     queryset = TeacherProfile.objects.all()
     serializer_class = TeacherProfileSerializer
+    permission_classes = (TeacherAccessPolicy,)
 
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
             return TeacherProfileRequestSerializer
-        return TeacherProfileRequestSerializer
+        return TeacherProfileSerializer
 
 
 @extend_schema_view(
@@ -163,6 +191,7 @@ class TeacherProfileViewSet(viewsets.ModelViewSet):
 class AdminProfileViewSet(viewsets.ModelViewSet):
     queryset = AdminProfile.objects.all()
     serializer_class = AdminProfileSerializer
+    permission_classes = (AdminAccessPolicy,)
 
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
@@ -189,6 +218,7 @@ class AdminProfileViewSet(viewsets.ModelViewSet):
 class StudentProfileViewSet(viewsets.ModelViewSet):
     queryset = StudentProfile.objects.all()
     serializer_class = StudentProfileSerializer
+    permission_classes = (StudentAccessPolicy,)
 
     def get_queryset(self):
         gr_id = self.request.query_params.get('group_id')
