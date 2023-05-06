@@ -157,7 +157,7 @@ class LessonViewSet(viewsets.ModelViewSet):
         ],
     ),
     create=extend_schema(
-        request=MarkRequestSerializer,
+        request=MarkSerializer,
     ),
 )
 class MarkViewSet(viewsets.ModelViewSet):
@@ -179,6 +179,26 @@ class MarkViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return MarkRequestSerializer
         return MarkSerializer
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        gr_id = request.data['group_id']
+        st_id = request.data['student_id']
+        if not user.groups.filter(name="teacher").exists() and not user.groups.filter(name="admin").exists():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        elif user.groups.filter(name="teacher").exists():
+            if int(user.teacherprofile.id) != int(Group.objects.get(id=gr_id).teacher_id):
+                return Response(status=status.HTTP_403_FORBIDDEN)
+        if gr_id is not None and st_id is not None:
+            queryset = GroupMembership.objects.filter(group_id=gr_id)
+            gr_mem_id = queryset.get(student_id=st_id).id
+            serializer_class = MarkRequestSerializer(data={'mark': request.data['mark'],
+                                                     'description': request.data['description'],
+                                                     'group_membership': gr_mem_id})
+            if serializer_class.is_valid():
+                serializer_class.save()
+                return Response(status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema_view(

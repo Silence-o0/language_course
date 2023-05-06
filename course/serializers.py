@@ -99,6 +99,19 @@ class LessonSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = '__all__'
 
+    def validate(self, data):
+        if data['time_start'] >= data['time_finish']:
+            raise serializers.ValidationError("finish must occur after start")
+        gr_id = data['group'].id
+        teach_id = TeacherProfile.objects.get(group__id=gr_id)
+        queryset = Lesson.objects.filter(group__teacher_id=teach_id)
+        queryset = queryset.filter(day_week=data['day_week'])
+        for lesson in queryset:
+            if (lesson.time_start < data['time_start'] < lesson.time_finish) or \
+                    (lesson.time_start < data['time_finish'] < lesson.time_finish):
+                raise serializers.ValidationError("This teacher already has a lesson on this time")
+        return data
+
 
 class MarkSerializer(serializers.ModelSerializer):
     student_id = serializers.IntegerField(source="group_membership.student_id")
@@ -112,7 +125,7 @@ class MarkSerializer(serializers.ModelSerializer):
 class MarkRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mark
-        fields = '__all__'
+        fields = ('mark', 'description', 'group_membership')
 
 
 class StudentIdSerializer(serializers.ModelSerializer):
