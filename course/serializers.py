@@ -7,7 +7,8 @@ from course.models import *
 __all__ = ['TeacherProfileSerializer', 'AdminProfileSerializer', 'StudentProfileSerializer',
            'GroupSerializer', 'LanguageSerializer', 'LessonSerializer', 'MarkSerializer',
            'StudentIdSerializer', 'StudentProfileRequestSerializer', 'AdminProfileRequestSerializer',
-           'TeacherProfileRequestSerializer']
+           'TeacherProfileRequestSerializer', 'StudentProfileListSerializer', 'TeacherProfileListSerializer',
+           'MarkRequestSerializer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
@@ -41,6 +42,26 @@ class StudentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentProfile
         fields = '__all__'
+
+
+class StudentProfileListSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+
+    class Meta:
+        model = StudentProfile
+        fields = ('username', 'first_name', 'last_name')
+
+
+class TeacherProfileListSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    first_name = serializers.CharField(source="user.first_name")
+    last_name = serializers.CharField(source="user.last_name")
+
+    class Meta:
+        model = TeacherProfile
+        fields = ('username', 'first_name', 'last_name')
 
 
 class StudentProfileRequestSerializer(serializers.ModelSerializer):
@@ -80,9 +101,18 @@ class LessonSerializer(serializers.ModelSerializer):
 
 
 class MarkSerializer(serializers.ModelSerializer):
+    student_id = serializers.IntegerField(source="group_membership.student_id")
+    group_id = serializers.IntegerField(source="group_membership.group_id")
+
     class Meta:
         model = Mark
-        fields = ('id', 'mark', 'description')
+        fields = ('id', 'mark', 'description', 'student_id', 'group_id')
+
+
+class MarkRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mark
+        fields = '__all__'
 
 
 class StudentIdSerializer(serializers.ModelSerializer):

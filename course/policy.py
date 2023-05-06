@@ -3,6 +3,8 @@ from rest_access_policy import AccessPolicy
 __all__ = ['LanguageAccessPolicy', 'TeacherAccessPolicy', 'StudentAccessPolicy', 'AdminAccessPolicy',
            'LessonAccessPolicy', 'MarkAccessPolicy', 'GroupAccessPolicy']
 
+from course.models import TeacherProfile
+
 
 class LanguageAccessPolicy(AccessPolicy):
     statements = [
@@ -92,11 +94,6 @@ class LessonAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["update", "delete", "create"],
-            "principal": ["group:teacher"],
-            "effect": "allow",
-        },
-        {
             "action": "*",
             "principal": ["group:admin"],
             "effect": "allow",
@@ -132,7 +129,7 @@ class GroupAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["update", "assign_student_to_group", "remove_student_from_group"],
+            "action": ["assign_student_to_group", "remove_student_from_group"],
             "principal": ["group:teacher"],
             "effect": "allow",
         },

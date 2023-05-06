@@ -59,7 +59,13 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def assign_student_to_group(self, request, *args, **kwargs):
+        user = self.request.user
         group = self.get_object()
+        if not user.groups.filter(name="teacher").exists() and not user.groups.filter(name="admin").exists():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        elif user.groups.filter(name="teacher").exists():
+            if group.teacher_id is None or int(user.teacherprofile.id) != int(group.teacher_id):
+                return Response(status=status.HTTP_403_FORBIDDEN)
         serializer_class = StudentIdSerializer(data=request.data)
         if serializer_class.is_valid():
             try:
@@ -73,9 +79,15 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['delete'], url_path=r'remove_student_from_group/(?P<student_id>\w+)')
     def remove_student_from_group(self, request, *args, **kwargs):
+        user = self.request.user
         group = self.get_object()
         student_id = kwargs.get('student_id')
 
+        if not user.groups.filter(name="teacher").exists() and not user.groups.filter(name="admin").exists():
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        elif user.groups.filter(name="teacher").exists():
+            if group.teacher_id is None or int(user.teacherprofile.id) != int(group.teacher_id):
+                return Response(status=status.HTTP_403_FORBIDDEN)
         if student_id is not None and group is not None:
             student = StudentProfile.objects.get(id=student_id)
             group.studentprofile_set.remove(student)
@@ -143,7 +155,10 @@ class LessonViewSet(viewsets.ModelViewSet):
                 type=OpenApiTypes.INT,
             ),
         ],
-    )
+    ),
+    create=extend_schema(
+        request=MarkRequestSerializer,
+    ),
 )
 class MarkViewSet(viewsets.ModelViewSet):
     serializer_class = MarkSerializer
@@ -159,6 +174,11 @@ class MarkViewSet(viewsets.ModelViewSet):
         if stud_id := self.request.query_params.get("student_id"):
             queryset = queryset.filter(group_membership__student_id=stud_id)
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return MarkRequestSerializer
+        return MarkSerializer
 
 
 @extend_schema_view(
@@ -177,6 +197,8 @@ class TeacherProfileViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
             return TeacherProfileRequestSerializer
+        elif self.action == 'list':
+            return TeacherProfileListSerializer
         return TeacherProfileSerializer
 
 
@@ -229,4 +251,6 @@ class StudentProfileViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'create' or self.action == 'update':
             return StudentProfileRequestSerializer
+        elif self.action == 'list':
+            return StudentProfileListSerializer
         return StudentProfileSerializer
