@@ -1,0 +1,135 @@
+.reg-back {
+        min-height: 609px;
+        align-content: center;
+        font-family: 'OpenSans, OpenSans-Regular', serif;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+}
+.forms {
+    margin-right: 20%;
+    position: absolute;
+    width: 30%;
+    border: 2px solid #8C3175FF;
+    padding: 26px;
+    background-color: white;
+    top: 18%;
+    transform: translateX(115%);
+    border-radius: 16px;
+}
+@media only screen and (max-width: 900px) {
+    .forms {
+        margin-right: 20%;
+        position: absolute;
+        width: 70%;
+        border: 2px solid #8C3175FF;
+        padding: 26px;
+        background-color: white;
+        top: 18%;
+        transform: translateX(23%);
+        border-radius: 16px;
+    }
+}
+.btn-log{
+    background-color: #ffeef6 !important;
+    border: 1px solid #8C3175FF !important;
+    align-content: center;
+    width: 120px;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    --bs-btn-hover-border-color: transparent !important;
+    --bs-btn-border-color: #8C3175FF; !important;
+    --bs-btn-bg: #ffd4e7 !important;
+}
+.btn-wrapper {
+    display: flex;
+    justify-content: center;
+}
+.btn-log:hover {
+    background-color: #fdddea !important;
+}
+.form-field-wrapper>input {
+  display: block;
+  width: 100%;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  background-clip: padding-box;
+  border: var(--bs-border-width) solid rgba(253, 192, 244, 0.89);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.form-field-wrapper>input:focus {
+  border: var(--bs-border-width) solid #e58eda; !important;
+}
+input[type="text"], input[type="password"], input[type="email"] {
+    height: 34px;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    padding: 10px;
+}
+.form-control:focus {
+  color: #af42a7;
+  background-color: #fff;
+  border-color: #eeb9e6; !important;
+  outline: 0;
+  box-shadow: 0 0 0 0.15rem rgba(238, 185, 230, 0.28) !important;
+}
+.help-link {
+    color: #af42a7;
+    font-size: 13px;
+}
+.help-link:hover {
+    color: #e179da;
+    font-size: 14px;
+}
+.confirmation {
+    top: 50%;
+    text-align: center;
+    vertical-align: center;
+}
+.confirmation-body {
+    background-color: #fff3fa;
+    color: #8c2887;
+}
+.confirmation-text {
+    margin-top: 150px;
+    font-family: "Edwardian Script ITC", serif;
+    font-size: 60px;
+}
+.confirmation-logo {
+    height: 70px;
+    width: 70px;
+    margin-top: 20px;
+}
+.confirmation-login-page {
+    height: 40px;
+    width: 40px;
+    float: right;
+    margin-right: 68px;
+    margin-top: 10px;
+}
+.return-text {
+    text-align: left;
+    font-size: 16px;
+    text-decoration: none;
+    color: #8c2887;
+}
+.return-div {
+    max-width: 150px !important;
+    margin-top: 120px;
+    margin-right: 70px !important;
+    width: 100px;
+    height: 140px;
+    float: right;
+}
+
+.return-text:hover {
+    font-size: 17px;
+    color: #721c6e;
+}
