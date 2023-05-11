@@ -137,7 +137,12 @@ class StudentIdSerializer(serializers.ModelSerializer):
 
 
 class UserRegisterSerializer(UserCreateSerializer):
-    class Meta(UserCreateSerializer.Meta):
+    first_name = serializers.CharField(allow_blank=False)
+    last_name = serializers.CharField(allow_blank=False)
+    email = serializers.EmailField(allow_blank=False)
+
+    class Meta:
+        model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 
 

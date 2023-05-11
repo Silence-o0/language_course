@@ -121,7 +121,7 @@ EMAIL_HOST_PASSWORD = "olsxqsubjxtawldp"
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': 'api/users/reset_password?uid={uid}&token={token}',
     'USERNAME_RESET_CONFIRM_URL': 'api/users/reset_username?uid={uid}&token={token}',
-    'ACTIVATION_URL': 'api/users/activation?uid={uid}&token={token}',
+    'ACTIVATION_URL': 'confirmation-register/?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
     'SERIALIZERS': {

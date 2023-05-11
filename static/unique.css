@@ -1,10 +1,11 @@
 .reg-back {
-        min-height: 609px;
-        align-content: center;
-        font-family: 'OpenSans, OpenSans-Regular', serif;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
+    margin-bottom: 4%;
+    min-height: 720px !important;
+    align-content: center;
+    font-family: 'OpenSans, OpenSans-Regular', serif;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 .forms {
     margin-right: 20%;
@@ -98,6 +99,7 @@ input[type="text"], input[type="password"], input[type="email"] {
     color: #8c2887;
 }
 .confirmation-text {
+    visibility: hidden;
     margin-top: 150px;
     font-family: "Edwardian Script ITC", serif;
     font-size: 60px;
@@ -128,8 +130,27 @@ input[type="text"], input[type="password"], input[type="email"] {
     height: 140px;
     float: right;
 }
-
 .return-text:hover {
     font-size: 17px;
     color: #721c6e;
+}
+.ok-message {
+    visibility: hidden;
+    font-size: 16px;
+    color: #8c2887;
+    text-align: center;
+}
+.error-message {
+    visibility: hidden;
+    font-size: 12px;
+    color: #ff7171;
+}
+.input-invalid {
+    border-color: #ff7171 !important;
+}
+.input-invalid:focus {
+    background-color: #fff;
+    border-color: #ff9797; !important;
+    outline: 0;
+    box-shadow: 0 0 0 0.15rem rgba(255, 113, 113, 0.32) !important;
 }

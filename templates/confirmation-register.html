@@ -1,0 +1,40 @@
+{% extends 'base-confirmation.html' %}
+{% load static %}
+
+{% block confirmcontent %}
+    <h1 class="confirmation-text" id="confirmation-text"></h1>
+    <script>
+        window.addEventListener("load", async function () {
+            let currentUrl = document.URL;
+            let index = currentUrl.indexOf("?") + 1
+            let params = currentUrl.slice(index);
+            const arrayOfParams = params.split('&');
+
+            index = arrayOfParams[0].indexOf("=") + 1
+            let uid = arrayOfParams[0].slice(index);
+            index = arrayOfParams[1].indexOf("=") + 1
+            let token = arrayOfParams[1].slice(index);
+
+            let headers = {
+                "X-Requested-With": 'XMLHttpRequest',
+                "Content-Type": 'application/json'
+            }
+            let response = fetch('/api/users/activation/', {
+                method: 'post',
+                headers: headers,
+                body: JSON.stringify({uid: uid, token: token}),
+            })
+
+            let data = await response;
+
+            if (data.status === 204) {
+                document.getElementById("confirmation-text").innerHTML = 'Your registration has been confirmed';
+                document.getElementById("confirmation-text").style.visibility = 'visible';
+            }
+            else {
+                document.getElementById("confirmation-text").innerHTML = '404';
+                document.getElementById("confirmation-text").style.visibility = 'visible';
+            }
+        });
+    </script>
+{% endblock %}

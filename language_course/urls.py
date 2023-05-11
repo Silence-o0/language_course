@@ -8,7 +8,7 @@ urlpatterns = [
     path('login/', TemplateView.as_view(template_name="login.html")),
     path('register/', TemplateView.as_view(template_name="register.html")),
     path('reset-password/', TemplateView.as_view(template_name="reset-password.html")),
-    path('confirmation/', TemplateView.as_view(template_name="confirmation.html")),
+    path('confirmation-register/', TemplateView.as_view(template_name="confirmation-register.html")),
     path('admin/', admin.site.urls),
     path('api/', include('course.urls')),
     path('api/', include('djoser.urls')),
