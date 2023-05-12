@@ -154,3 +154,12 @@ input[type="text"], input[type="password"], input[type="email"] {
     outline: 0;
     box-shadow: 0 0 0 0.15rem rgba(255, 113, 113, 0.32) !important;
 }
+.head {
+    height: 70px;
+    border-bottom: 1px solid #8c2887;
+}
+.logo-head {
+    height: 50px;
+    width: 50px;
+    margin-top: 10px;
+}

@@ -1,7 +1,8 @@
-async function makeRequest(url, method, body) {
+async function makeRequest(url, method, body, additionalHeaders) {
     let headers = {
         "X-Requested-With": 'XMLHttpRequest',
-        "Content-Type": 'application/json'
+        "Content-Type": 'application/json',
+        ...additionalHeaders,
     }
 
     let response = fetch(url, {
@@ -12,6 +13,21 @@ async function makeRequest(url, method, body) {
 
     return await response
 }
+
+async function makeRequestAuthorized(url, method, body, additionalHeaders) {
+    await updateTokens();
+    let accessToken = getAccessToken();
+
+    let token = 'Bearer ' + accessToken;
+
+    additionalHeaders = {
+        'Authorization': token,
+    }
+
+    let response = await makeRequest(url, method, body, additionalHeaders);
+    return await response;
+}
+
 
 async function register() {
     normalizeAllAfterValidity();
@@ -91,20 +107,94 @@ function normalizeAfterValidity(inputId, textId) {
     document.getElementById(textId).style.visibility = 'hidden';
 }
 
-const confirmationText = document.getElementById("confirmation-text");
+async function profileLoad() {
+    let response = await makeRequestAuthorized('/api/users/me', 'get');
+    let data = await response.json()
+    let time = localStorage.getItem("accessTokenTime");
+    console.log(data)
+}
 
-confirmationText.addEventListener("load", async function () {
-    let currentUrl = document.URL;
-    let queryStart = currentUrl.indexOf("?") + 1
-    let params = currentUrl.slice(queryStart)
+function addMinutes(date, minutes) {
+  date.setMinutes(date.getMinutes() + minutes);
 
-    alert(params);
-});
+  return date;
+}
 
-async function confirmRegister() {
-    let currentUrl = document.URL;
-    let queryStart = currentUrl.indexOf("?") + 1
-    let params = currentUrl.slice(queryStart)
+async function login() {
+    normalizeAllAfterLoginValidity();
+    let username = document.getElementById('inputUsername').value;
+    let password = document.getElementById('inputPassword1').value;
 
-    alert(params);
+    let response = await makeRequest('/api/jwt/create', 'post', JSON.stringify({
+        username: username,
+        password: password
+    }))
+
+    let data = await response.json()
+
+    if(response.status === 200) {
+        const accessDate = addMinutes(new Date(), 10);
+        const refreshDate = addMinutes(new Date(), 24 * 60);
+
+        localStorage.setItem("accessToken", data.access);
+        localStorage.setItem("accessTokenTime", accessDate.toString());
+        localStorage.setItem("refreshToken", data.refresh);
+        localStorage.setItem("refreshTokenTime", refreshDate.toString());
+        window.location.href = "/profile/me";
+    }
+    else {
+        allLoginCheckValidity(data)
+    }
+}
+
+function allLoginCheckValidity(data) {
+    checkValidity(data.username, 'inputUsername', 'username-error')
+    checkValidity(data.password, 'inputPassword1', 'password1-error')
+    if (data.detail !== undefined) {
+        checkValidity("Login or password is incorrect", 'inputPassword1', 'password1-error')
+    }
+}
+
+function normalizeAllAfterLoginValidity() {
+    normalizeAfterValidity('inputUsername', 'username-error')
+    normalizeAfterValidity('inputPassword1', 'password1-error')
+}
+
+function getAccessToken() {
+    if (checkAccessToken()) {
+        console.log('True');
+        return localStorage.getItem("accessToken");
+    }
+    else {
+        console.log('False');
+        localStorage.removeItem("accessToken");
+        return undefined;
+    }
+}
+
+function checkAccessToken() {
+    const time = localStorage.getItem("accessTokenTime");
+    const currentTime = new Date().toString();
+    return currentTime < time;
+}
+
+async function updateTokens() {
+    let accessToken = getAccessToken();
+    if (accessToken === undefined) {
+        const refresh = localStorage.getItem("refreshToken");
+        if (new Date().toString() < localStorage.getItem("refreshTokenTime")) {
+            let response = await makeRequest('/api/jwt/refresh', 'post', JSON.stringify({
+                refresh: refresh,
+            }));
+            let data = await response.json();
+            console.log(data);
+            localStorage.setItem("accessToken", data.access);
+            const accessDate = addMinutes(new Date(), 10);
+            localStorage.setItem("accessTokenTime", accessDate.toString());
+        }
+        else {
+            window.location.href = "/login";
+            throw new Error('Not valid refresh token.')
+        }
+    }
 }
