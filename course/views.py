@@ -52,9 +52,9 @@ class GroupViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(language_id=lang_id)
         if stud_id := query_params.get('student_id'):
             if user.groups.filter(name="student").exists():
-                if int(user.studentprofile.id) != int(stud_id):
+                if int(user.studentprofile.user_id) != int(stud_id):
                     return None
-            queryset = queryset.filter(studentprofile__id=stud_id)
+            queryset = queryset.filter(studentprofile__user_id=stud_id)
         return queryset
 
     @action(detail=True, methods=['post'])
@@ -64,7 +64,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         if not user.groups.filter(name="teacher").exists() and not user.groups.filter(name="admin").exists():
             return Response(status=status.HTTP_403_FORBIDDEN)
         elif user.groups.filter(name="teacher").exists():
-            if group.teacher_id is None or int(user.teacherprofile.id) != int(group.teacher_id):
+            if group.teacher_id is None or int(user.teacherprofile.user_id) != int(group.teacher_id):
                 return Response(status=status.HTTP_403_FORBIDDEN)
         serializer_class = StudentIdSerializer(data=request.data)
         if serializer_class.is_valid():
@@ -86,7 +86,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         if not user.groups.filter(name="teacher").exists() and not user.groups.filter(name="admin").exists():
             return Response(status=status.HTTP_403_FORBIDDEN)
         elif user.groups.filter(name="teacher").exists():
-            if group.teacher_id is None or int(user.teacherprofile.id) != int(group.teacher_id):
+            if group.teacher_id is None or int(user.teacherprofile.user_id) != int(group.teacher_id):
                 return Response(status=status.HTTP_403_FORBIDDEN)
         if student_id is not None and group is not None:
             student = StudentProfile.objects.get(id=student_id)
@@ -134,14 +134,14 @@ class LessonViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(group__teacher__user=user)
         if teach_id := query_params.get('teacher_id'):
             if user.groups.filter(name="teacher").exists():
-                if int(user.teacherprofile.id) != int(teach_id):
+                if int(user.teacherprofile.user_id) != int(teach_id):
                     return None
             queryset = queryset.filter(group__teacher_id=teach_id)
         if gr_id := query_params.get('group_id'):
             queryset = queryset.filter(group_id=gr_id)
         if stud_id := query_params.get('student_id'):
             if user.groups.filter(name="student").exists():
-                if int(user.studentprofile.id) != int(stud_id):
+                if int(user.studentprofile.user_id) != int(stud_id):
                     return None
             queryset = queryset.filter(group__groupmembership__student_id=stud_id)
         return queryset
@@ -188,7 +188,7 @@ class MarkViewSet(viewsets.ModelViewSet):
             if not user.groups.filter(name="teacher").exists() and not user.groups.filter(name="admin").exists():
                 return Response(status=status.HTTP_403_FORBIDDEN)
             elif user.groups.filter(name="teacher").exists():
-                if int(user.teacherprofile.id) != int(Group.objects.get(id=gr_id).teacher_id):
+                if int(user.teacherprofile.user_id) != int(Group.objects.get(id=gr_id).teacher_id):
                     return Response(status=status.HTTP_403_FORBIDDEN)
             if gr_id is not None and st_id is not None:
 
