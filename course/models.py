@@ -7,7 +7,7 @@ __all__ = ['Profile', 'TeacherProfile', 'AdminProfile', 'StudentProfile', 'Group
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     birth_date = models.DateField(auto_now=False, auto_now_add=False, null=True, blank=True,
                                   help_text='Please use the following format: <em>YYYY-MM-DD</em>.')
 

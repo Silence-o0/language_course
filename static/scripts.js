@@ -110,8 +110,38 @@ function normalizeAfterValidity(inputId, textId) {
 async function profileLoad() {
     let response = await makeRequestAuthorized('/api/users/me', 'get');
     let data = await response.json()
-    let time = localStorage.getItem("accessTokenTime");
     console.log(data)
+
+    generateProfile(data);
+}
+
+function generateProfile(data) {
+    addDiv('Name: ', data.first_name+' '+data.last_name);
+    addDiv('Username: ', data.username);
+    addDiv('Email: ', data.email);
+
+}
+
+function addDiv(profLabel, profValue){
+    const cont = document.createElement("div");
+    cont.classList.add("container-fluid");
+    cont.classList.add("profile-info");
+
+    const label = document.createElement("p");
+    label.classList.add("profile-label");
+    const labelNode = document.createTextNode(profLabel);
+    const value = document.createElement("p");
+    value.classList.add("profile-value");
+    const valueNode = document.createTextNode(profValue);
+
+    label.appendChild(labelNode);
+    value.appendChild(valueNode);
+
+    cont.appendChild(label);
+    cont.appendChild(value);
+
+    const mainDiv = document.getElementById('mainDiv');
+    mainDiv.appendChild(cont);
 }
 
 function addMinutes(date, minutes) {
