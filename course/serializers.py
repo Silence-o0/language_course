@@ -148,5 +148,5 @@ class UserRegisterSerializer(UserCreateSerializer):
 
 class UserUpdateSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
-        fields = ('username', 'first_name', 'last_name', 'email')
-        read_only_fields = ('username', 'email')
+        fields = ('username', 'first_name', 'last_name', 'email', 'id')
+        read_only_fields = ('username', 'email', 'id')

@@ -108,18 +108,58 @@ function normalizeAfterValidity(inputId, textId) {
 }
 
 async function profileLoad() {
-    let response = await makeRequestAuthorized('/api/users/me', 'get');
-    let data = await response.json()
-    console.log(data)
-
-    generateProfile(data);
+    let currentUrl = document.URL;
+    const arrayOfParams = currentUrl.split('/');
+    let userId = arrayOfParams[arrayOfParams.length-1];
+    let id;
+    if (userId === 'me') {
+        console.log('me')
+        let response = await makeRequestAuthorized('/api/users/me', 'get');
+        let dataId = await response.json();
+        console.log(dataId);
+        id = dataId.id;
+    }
+    else {
+        console.log(userId)
+        id = userId;
+    }
+    await userProfileLoad(id);
 }
 
-function generateProfile(data) {
+async function userProfileLoad(id) {
+    let url = '/api/students/' + id;
+    let response = await makeRequestAuthorized(url, 'get');
+    let role = 'Student';
+    if (response.status !== 200) {
+        url = '/api/teachers/' + id;
+        response = await makeRequestAuthorized(url, 'get');
+        role = 'Teacher';
+        if (response.status !== 200) {
+            url = '/api/admins/' + id;
+            response = await makeRequestAuthorized(url, 'get');
+            role = 'Admin';
+            if (response.status !== 200) {
+                throw new Error('404');
+            }
+        }
+    }
+    let data = await response.json()
+    console.log(data)
+    generateProfile(data, role);
+}
+
+function generateProfile(data, role) {
     addDiv('Name: ', data.first_name+' '+data.last_name);
     addDiv('Username: ', data.username);
     addDiv('Email: ', data.email);
-
+    addDiv('Birthdate: ', data.birth_date);
+    if (role === 'Teacher') {
+        addDiv('Education: ', data.education);
+        addDiv('Years of experience: ', data.years_experience);
+    }
+    else if (role === 'Admin') {
+        addDiv('Position: ', data.position);
+    }
 }
 
 function addDiv(profLabel, profValue){
@@ -192,11 +232,9 @@ function normalizeAllAfterLoginValidity() {
 
 function getAccessToken() {
     if (checkAccessToken()) {
-        console.log('True');
         return localStorage.getItem("accessToken");
     }
     else {
-        console.log('False');
         localStorage.removeItem("accessToken");
         return undefined;
     }
