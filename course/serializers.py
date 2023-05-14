@@ -152,15 +152,8 @@ class UserRegisterSerializer(UserCreateSerializer):
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password')
 
-    def validate(self, data):
-        queryset = User.objects.filter(email=data['email'])
-        if queryset is None:
-            return data
-        else:
-            raise serializers.ValidationError({'email': ["User with such email is already exist.", ]})
-
 
 class UserUpdateSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
-        fields = ('username', 'first_name', 'last_name', 'email', 'id')
-        read_only_fields = ('username', 'email', 'id')
+        fields = ('username', 'first_name', 'last_name', 'email', 'id', 'groups')
+        read_only_fields = ('username', 'email', 'id', 'groups')

@@ -7,6 +7,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 urlpatterns = [
     path('login/', TemplateView.as_view(template_name="login.html")),
     path('register/', TemplateView.as_view(template_name="register.html")),
+    path('confirmation-register/', TemplateView.as_view(template_name="confirmation-register.html")),
     path('profile/<int:id>', TemplateView.as_view(template_name="profile.html")),
     path('profile/me', TemplateView.as_view(template_name="profile.html")),
     path('groups/', TemplateView.as_view(template_name="lists.html")),

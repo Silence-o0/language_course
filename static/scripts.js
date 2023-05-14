@@ -11,7 +11,7 @@ async function makeRequest(url, method, body, additionalHeaders) {
         body: body
     })
 
-    return await response
+    return await response;
 }
 
 async function makeRequestAuthorized(url, method, body, additionalHeaders) {
@@ -46,7 +46,7 @@ async function register() {
             first_name: first_name,
             last_name: last_name,
             email: email,
-            password: password
+            password: password,
         }))
     }
     else {
@@ -113,45 +113,55 @@ async function profileLoad() {
     let userId = arrayOfParams[arrayOfParams.length-1];
     let id;
     if (userId === 'me') {
+        let role;
         console.log('me')
         let response = await makeRequestAuthorized('/api/users/me', 'get');
         let dataId = await response.json();
-        console.log(dataId);
+        if (dataId.groups[0] === 1) {
+            role = 'student';
+        }
+        else if (dataId.groups[0] === 2) {
+            role = 'teacher';
+        }
+        else if(dataId.groups[0] === 3) {
+            role = 'admin';
+        }
         id = dataId.id;
+        localStorage.setItem("role", role);
+        localStorage.setItem("user_id", id);
+        document.getElementById('profile-me-logout').style.visibility = 'visible';
     }
     else {
         console.log(userId)
         id = userId;
     }
-    localStorage.setItem("user_id", id);
     await userProfileLoad(id);
 }
 
 async function userProfileLoad(id) {
     let url = '/api/students/' + id;
+    let currentRole = 'student';
     let response = await makeRequestAuthorized(url, 'get');
-    let role = 'student';
     if (response.status !== 200) {
+        currentRole = 'teacher';
         url = '/api/teachers/' + id;
         response = await makeRequestAuthorized(url, 'get');
-        role = 'teacher';
         if (response.status !== 200) {
+            currentRole = 'admin';
             url = '/api/admins/' + id;
             response = await makeRequestAuthorized(url, 'get');
-            role = 'admin';
             if (response.status !== 200) {
                 throw new Error('404');
             }
         }
     }
-    localStorage.setItem("role", role);
     let data = await response.json()
     console.log(data)
     document.title = data.username;
-    generateProfile(data, role);
+    generateProfile(data, currentRole);
 }
 
-function generateProfile(data, role) {
+function generateProfile(data, currentRole) {
     addDiv('Name: ', data.first_name+' '+data.last_name);
     addDiv('Username: ', data.username);
     addDiv('Email: ', data.email);
@@ -159,11 +169,11 @@ function generateProfile(data, role) {
         data.birth_date = '';
     }
     addDiv('Birthdate: ', data.birth_date);
-    if (role === 'teacher') {
+    if (currentRole === 'teacher') {
         addDiv('Education: ', data.education);
         addDiv('Years of experience: ', data.years_experience);
     }
-    else if (role === 'admin') {
+    else if (currentRole === 'admin') {
         addDiv('Position: ', data.position);
     }
 }
@@ -320,8 +330,8 @@ async function groupsListLoad() {
 }
 
 const redirect = e => {
-  console.log(e.target.id);
-  window.location.href = document.URL+e.target.id;
+    console.log(e.target.id);
+    window.location.href = document.URL+e.target.id;
 }
 
 function addListElement(text, id) {
@@ -419,15 +429,15 @@ async function groupInfoListLoad(group_id) {
 
 async function studentInfoListLoad(group_id, student_id) {
     const role = localStorage.getItem("role");
-    let response = await makeRequestAuthorized('/api/students/'+student_id, 'get');
-    let data = await response.json();
     let name;
+    let link;
     if (role === 'student') {
         let responseGroup = await makeRequestAuthorized('/api/groups/'+group_id, 'get');
         let dataGroup = await responseGroup.json();
 
         let responseTeacher = await makeRequestAuthorized('/api/teachers/'+dataGroup.teacher, 'get');
         let dataTeacher = await responseTeacher.json();
+        link = '/profile/' + dataGroup.teacher;
 
         let responseLang = await makeRequestAuthorized('/api/languages/'+dataGroup.language, 'get');
         let dataLang = await responseLang.json();
@@ -437,6 +447,9 @@ async function studentInfoListLoad(group_id, student_id) {
         name = dataTeacher.first_name + ' ' + dataTeacher.last_name;
     }
     else {
+        let response = await makeRequestAuthorized('/api/students/'+student_id, 'get');
+        let data = await response.json();
+        link = '/profile/' + student_id;
         name = data.first_name + ' ' +  data.last_name;
         document.title = data.username;
     }
@@ -444,7 +457,7 @@ async function studentInfoListLoad(group_id, student_id) {
     mainLabel.classList.add("page-name-label");
     const labelNode = document.createTextNode(name);
     mainLabel.appendChild(labelNode);
-    mainLabel.href = '/profile/' + student_id;
+    mainLabel.href = link;
     const mainDiv = document.getElementById('mainDiv');
     mainDiv.appendChild(mainLabel);
 
@@ -462,12 +475,14 @@ async function studentInfoListLoad(group_id, student_id) {
             addListElement(obj.mark + " - " + obj.description, obj.id);
         }
     }
-    const addElement = document.createElement("a");
-    addElement.classList.add("profile-value");
-    addElement.href = document.URL + 'add-mark';
-    const textNode = document.createTextNode('Add mark');
-    addElement.appendChild(textNode);
-    mainDiv.appendChild(addElement);
+    if (role !== 'student') {
+        const addElement = document.createElement("a");
+        addElement.classList.add("profile-value");
+        addElement.href = document.URL + 'add-mark';
+        const textNode = document.createTextNode('Add mark');
+        addElement.appendChild(textNode);
+        mainDiv.appendChild(addElement);
+    }
 }
 
 async function markManage() {
@@ -545,8 +560,8 @@ async function editMark(gr_id, stud_id, mark_id) {
     let data = await response.json();
     console.log(data)
 
-    if (response.status === 201) {
-        window.location.href = "/groups/" + group_id + "/" + student_id;
+    if (response.status === 200) {
+        window.location.href = "/groups/" + gr_id + "/" + stud_id;
     }
     else if (response.status === 400) {
         checkValidity(data.mark, 'inputMark', 'mark-error')
@@ -554,6 +569,7 @@ async function editMark(gr_id, stud_id, mark_id) {
     else {
         alert(response.status);
     }
+    console.log(response.status)
 }
 
 async function deleteMark() {
@@ -580,7 +596,6 @@ async function manageMark(mark_id) {
 
     let response = await makeRequestAuthorized('/api/marks/'+mark_id, 'get');
     let data = await response.json();
-    console.log(data);
 
     document.getElementById('inputMark').value = data.mark;
     document.getElementById('inputDescription').value = data.description;
