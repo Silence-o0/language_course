@@ -130,15 +130,15 @@ async function profileLoad() {
 async function userProfileLoad(id) {
     let url = '/api/students/' + id;
     let response = await makeRequestAuthorized(url, 'get');
-    let role = 'Student';
+    let role = 'student';
     if (response.status !== 200) {
         url = '/api/teachers/' + id;
         response = await makeRequestAuthorized(url, 'get');
-        role = 'Teacher';
+        role = 'teacher';
         if (response.status !== 200) {
             url = '/api/admins/' + id;
             response = await makeRequestAuthorized(url, 'get');
-            role = 'Admin';
+            role = 'admin';
             if (response.status !== 200) {
                 throw new Error('404');
             }
@@ -159,11 +159,11 @@ function generateProfile(data, role) {
         data.birth_date = '';
     }
     addDiv('Birthdate: ', data.birth_date);
-    if (role === 'Teacher') {
+    if (role === 'teacher') {
         addDiv('Education: ', data.education);
         addDiv('Years of experience: ', data.years_experience);
     }
-    else if (role === 'Admin') {
+    else if (role === 'admin') {
         addDiv('Position: ', data.position);
     }
 }
@@ -352,6 +352,8 @@ async function listLoad() {
     console.log(result);
     const arrayOfParams = result.split('/');
     console.log(arrayOfParams);
+    const role = localStorage.getItem("role");
+    const user_id = localStorage.getItem("user_id");
 
     switch (arrayOfParams.length) {
         case 2:
@@ -359,10 +361,24 @@ async function listLoad() {
             await groupsListLoad();
             break;
         case 3:
-            await groupInfoListLoad(arrayOfParams[1]);
+            if (role === 'admin' || role === 'teacher') {
+                await groupInfoListLoad(arrayOfParams[1]);
+            }
+            else if (role === 'student') {
+                console.log('stud')
+                window.location.href = "/groups/"+arrayOfParams[1]+'/'+user_id;
+            }
             break;
         case 4:
-            await studentInfoListLoad(arrayOfParams[1], arrayOfParams[2]);
+            if (role === 'student') {
+                if (arrayOfParams[2] !== user_id) {
+                    window.location.href = "/groups/"+arrayOfParams[1]+'/'+user_id;
+                }
+                await studentInfoListLoad(arrayOfParams[1], arrayOfParams[2]);
+            }
+            else if (role === 'admin' || role === 'teacher') {
+                await studentInfoListLoad(arrayOfParams[1], arrayOfParams[2]);
+            }
             break;
     }
 }
@@ -402,12 +418,28 @@ async function groupInfoListLoad(group_id) {
 }
 
 async function studentInfoListLoad(group_id, student_id) {
+    const role = localStorage.getItem("role");
     let response = await makeRequestAuthorized('/api/students/'+student_id, 'get');
     let data = await response.json();
-    document.title = data.username;
-    console.log(data);
+    let name;
+    if (role === 'student') {
+        let responseGroup = await makeRequestAuthorized('/api/groups/'+group_id, 'get');
+        let dataGroup = await responseGroup.json();
 
-    const name = data.first_name + ' ' +  data.last_name;
+        let responseTeacher = await makeRequestAuthorized('/api/teachers/'+dataGroup.teacher, 'get');
+        let dataTeacher = await responseTeacher.json();
+
+        let responseLang = await makeRequestAuthorized('/api/languages/'+dataGroup.language, 'get');
+        let dataLang = await responseLang.json();
+        console.log(dataLang)
+
+        document.title = dataLang.name + ' ' + dataGroup.lang_level;
+        name = dataTeacher.first_name + ' ' + dataTeacher.last_name;
+    }
+    else {
+        name = data.first_name + ' ' +  data.last_name;
+        document.title = data.username;
+    }
     const mainLabel = document.createElement("a");
     mainLabel.classList.add("page-name-label");
     const labelNode = document.createTextNode(name);
@@ -423,7 +455,7 @@ async function studentInfoListLoad(group_id, student_id) {
 
     for (const obj of dataMark) {
         console.log(obj);
-        if (obj.description === '') {
+        if (obj.description === '' || obj.description === null) {
             addListElement(obj.mark, obj.id);
         }
         else {
