@@ -67,7 +67,7 @@
 .form-field-wrapper>input:focus {
   border: var(--bs-border-width) solid #e58eda; !important;
 }
-input[type="text"], input[type="password"], input[type="email"] {
+input[type="text"], input[type="password"], input[type="email"], input[type="number"] {
     height: 34px;
     width: 100%;
     box-sizing: border-box;
@@ -211,7 +211,12 @@ input[type="text"], input[type="password"], input[type="email"] {
     color: #8c2887;
     font-weight: bold;
     margin-left: 40px;
+    text-decoration: none;
 }
+.page-name-label:hover {
+    color: #6e1869;
+}
+
 
 
 

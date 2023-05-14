@@ -278,7 +278,9 @@ async function updateTokens() {
     let accessToken = getAccessToken();
     if (accessToken === undefined) {
         const refresh = localStorage.getItem("refreshToken");
-        if (new Date().toString() < localStorage.getItem("refreshTokenTime")) {
+        const currentDate = Date.parse(new Date().toString());
+        const expirationDate = Date.parse(localStorage.getItem("refreshTokenTime"));
+        if (currentDate < expirationDate) {
             let response = await makeRequest('/api/jwt/refresh', 'post', JSON.stringify({
                 refresh: refresh,
             }));
@@ -289,7 +291,7 @@ async function updateTokens() {
             localStorage.setItem("accessTokenTime", accessDate.toString());
         }
         else {
-        //    window.location.href = "/login";
+            window.location.href = "/login";
             throw new Error('Not valid refresh token.')
         }
     }
@@ -313,14 +315,23 @@ async function groupsListLoad() {
         let responseLang = await makeRequestAuthorized('/api/languages/'+obj.language, 'get');
         let dataLang = await responseLang.json();
         let text = dataLang.name + ' ' + obj.lang_level;
-        addListElement(text);
+        addListElement(text, obj.id);
     }
 }
 
-function addListElement(text) {
-    const cont = document.createElement("div");
+const redirect = e => {
+  console.log(e.target.id);
+  window.location.href = document.URL+e.target.id;
+}
+
+function addListElement(text, id) {
+    let cont = document.createElement("div");
+    cont.setAttribute('id', id)
     cont.classList.add("container");
     cont.classList.add("list-element");
+    cont.addEventListener('click', redirect);
+    console.log(cont.id);
+
 
     const groupName = document.createElement("p");
     groupName.classList.add("profile-value");
@@ -353,9 +364,6 @@ async function listLoad() {
         case 4:
             await studentInfoListLoad(arrayOfParams[1], arrayOfParams[2]);
             break;
-        case 5:
-            await markInfoLoad();
-            break;
     }
 }
 
@@ -383,26 +391,165 @@ async function groupInfoListLoad(group_id) {
     console.log(dataTeacher);
 
     addDivWithLink('Teacher: ', dataTeacher.first_name + ' ' + dataTeacher.last_name, '/profile/'+data.teacher);
-    let responseStudent = await makeRequestAuthorized('/api/students/', 'get');
+    let responseStudent = await makeRequestAuthorized('/api/students/?group_id='+group_id, 'get');
     let dataStudent = await responseStudent.json();
     console.log(dataStudent)
 
     for (const obj of dataStudent) {
         console.log(obj);
-
-        addListElement(obj.first_name + ' ' + obj.last_name);
+        addListElement(obj.first_name + ' ' + obj.last_name, obj.user_id);
     }
 }
 
 async function studentInfoListLoad(group_id, student_id) {
+    let response = await makeRequestAuthorized('/api/students/'+student_id, 'get');
+    let data = await response.json();
+    document.title = data.username;
+    console.log(data);
 
+    const name = data.first_name + ' ' +  data.last_name;
+    const mainLabel = document.createElement("a");
+    mainLabel.classList.add("page-name-label");
+    const labelNode = document.createTextNode(name);
+    mainLabel.appendChild(labelNode);
+    mainLabel.href = '/profile/' + student_id;
+    const mainDiv = document.getElementById('mainDiv');
+    mainDiv.appendChild(mainLabel);
 
-    console.log('student')
+    const requestUrl = '/api/marks/?student_id=' + student_id + "&group_id=" + group_id;
+    let responseMark = await makeRequestAuthorized(requestUrl, 'get');
+    let dataMark = await responseMark.json();
+    console.log(dataMark)
 
+    for (const obj of dataMark) {
+        console.log(obj);
+        if (obj.description === '') {
+            addListElement(obj.mark, obj.id);
+        }
+        else {
+            addListElement(obj.mark + " - " + obj.description, obj.id);
+        }
+    }
+    const addElement = document.createElement("a");
+    addElement.classList.add("profile-value");
+    addElement.href = document.URL + 'add-mark';
+    const textNode = document.createTextNode('Add mark');
+    addElement.appendChild(textNode);
+    mainDiv.appendChild(addElement);
 }
 
-async function markInfoLoad() {
-    document.title = 'Groups';
-    console.log('markdetail')
+async function markManage() {
+    const url = document.URL;
+    const index = url.indexOf('groups');
+    const result = url.slice(index);
 
+    console.log(result);
+    const arrayOfParams = result.split('/');
+    console.log(arrayOfParams);
+
+    if (arrayOfParams[arrayOfParams.length - 2] === 'add-mark') {
+        document.title = 'New mark';
+        await newMark();
+    }
+    else {
+        document.title = 'Edit mark';
+        await manageMark(arrayOfParams[3]);
+    }
+}
+
+async function newMark() {
+    document.getElementById('add-change-btn').innerHTML = 'Add';
+    document.getElementById('delete-btn').style.display = "none";
+}
+
+async function addEditMark() {
+    const url = document.URL;
+    const index = url.indexOf('groups');
+    const result = url.slice(index);
+
+    console.log(result);
+    const arrayOfParams = result.split('/');
+    console.log(arrayOfParams);
+
+    if (arrayOfParams[arrayOfParams.length - 2] === 'add-mark') {
+        await addNewMark(arrayOfParams[1], arrayOfParams[2]);
+    }
+    else {
+        await editMark(arrayOfParams[1], arrayOfParams[2], arrayOfParams[3]);
+    }
+}
+
+async function addNewMark(group_id, student_id) {
+    let mark = document.getElementById('inputMark').value;
+    let description = document.getElementById('inputDescription').value;
+
+    let response = await makeRequestAuthorized('/api/marks/', 'post', JSON.stringify({
+        mark: mark,
+        description: description,
+        student_id: student_id,
+        group_id: group_id
+    }));
+
+    if (response.status === 201) {
+        window.location.href = "/groups/" + group_id + "/" + student_id;
+    }
+    else {
+        if (mark === '') {
+            checkValidity('This field can not be blank.', 'inputMark', 'mark-error')
+        }
+        alert(response.status);
+    }
+}
+
+async function editMark(gr_id, stud_id, mark_id) {
+    const mark = document.getElementById('inputMark').value;
+    const description = document.getElementById('inputDescription').value;
+
+    let response = await makeRequestAuthorized('/api/marks/'+mark_id+'/', 'put', JSON.stringify({
+        mark: mark,
+        description: description,
+    }));
+
+    let data = await response.json();
+    console.log(data)
+
+    if (response.status === 201) {
+        window.location.href = "/groups/" + group_id + "/" + student_id;
+    }
+    else if (response.status === 400) {
+        checkValidity(data.mark, 'inputMark', 'mark-error')
+    }
+    else {
+        alert(response.status);
+    }
+}
+
+async function deleteMark() {
+    const url = document.URL;
+    const index = url.indexOf('groups');
+    const result = url.slice(index);
+
+    console.log(result);
+    const arrayOfParams = result.split('/');
+    console.log(arrayOfParams);
+
+    let response = await makeRequestAuthorized('/api/marks/'+arrayOfParams[3], 'delete');
+    if (response.status === 204) {
+        window.location.href = "/groups/" + arrayOfParams[1] + "/" + arrayOfParams[2];
+    }
+    else {
+        alert(response.status)
+    }
+}
+
+async function manageMark(mark_id) {
+    document.getElementById('add-change-btn').innerHTML = 'Edit';
+    document.getElementById('delete-btn').innerHTML = 'Delete';
+
+    let response = await makeRequestAuthorized('/api/marks/'+mark_id, 'get');
+    let data = await response.json();
+    console.log(data);
+
+    document.getElementById('inputMark').value = data.mark;
+    document.getElementById('inputDescription').value = data.description;
 }

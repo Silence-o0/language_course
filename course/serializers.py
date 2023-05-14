@@ -8,7 +8,7 @@ __all__ = ['TeacherProfileSerializer', 'AdminProfileSerializer', 'StudentProfile
            'GroupSerializer', 'LanguageSerializer', 'LessonSerializer', 'MarkSerializer',
            'StudentIdSerializer', 'StudentProfileRequestSerializer', 'AdminProfileRequestSerializer',
            'TeacherProfileRequestSerializer', 'StudentProfileListSerializer', 'TeacherProfileListSerializer',
-           'MarkRequestSerializer']
+           'MarkRequestSerializer', 'MarkUpdateSerializer']
 
 
 class TeacherProfileSerializer(serializers.ModelSerializer):
@@ -51,7 +51,8 @@ class StudentProfileListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentProfile
-        fields = ('username', 'first_name', 'last_name')
+        fields = ('user_id', 'username', 'first_name', 'last_name')
+        read_only_fields = ('user_id',)
 
 
 class TeacherProfileListSerializer(serializers.ModelSerializer):
@@ -126,6 +127,12 @@ class MarkRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mark
         fields = ('mark', 'description', 'group_membership')
+
+
+class MarkUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mark
+        fields = ('mark', 'description')
 
 
 class StudentIdSerializer(serializers.ModelSerializer):

@@ -159,10 +159,17 @@ class LessonViewSet(viewsets.ModelViewSet):
                 name='student_id',
                 type=OpenApiTypes.INT,
             ),
+            OpenApiParameter(
+                name='group_id',
+                type=OpenApiTypes.INT,
+            ),
         ],
     ),
     create=extend_schema(
         request=MarkSerializer,
+    ),
+    update=extend_schema(
+        request=MarkUpdateSerializer,
     ),
 )
 class MarkViewSet(viewsets.ModelViewSet):
@@ -178,11 +185,15 @@ class MarkViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(group_membership__group__teacher__user=user)
         if stud_id := self.request.query_params.get("student_id"):
             queryset = queryset.filter(group_membership__student_id=stud_id)
+        if gr_id := self.request.query_params.get("group_id"):
+            queryset = queryset.filter(group_membership__group_id=gr_id)
         return queryset
 
     def get_serializer_class(self):
         if self.action == 'create':
             return MarkRequestSerializer
+        if self.action == 'update':
+           return MarkUpdateSerializer
         return MarkSerializer
 
     def create(self, request, *args, **kwargs):
