@@ -46,7 +46,12 @@ class GroupViewSet(viewsets.ModelViewSet):
         queryset = Group.objects.all()
         if user.groups.filter(name="student").exists():
             queryset = queryset.filter(groupmembership__student__user=user)
+        if user.groups.filter(name="teacher").exists():
+            queryset = queryset.filter(teacher_id=user.id)
         if teach_id := query_params.get('teacher_id'):
+            if user.groups.filter(name="teacher").exists():
+                if int(user.teacherprofile.user_id) != int(teach_id):
+                    return None
             queryset = queryset.filter(teacher_id=teach_id)
         if lang_id := query_params.get('language_id'):
             queryset = queryset.filter(language_id=lang_id)

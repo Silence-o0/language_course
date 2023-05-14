@@ -188,17 +188,29 @@ input[type="text"], input[type="password"], input[type="email"] {
     float: left;
     color: #8c2887;
     font-weight: bold;
-    margin-top: 20px;
+    margin-top: 18px;
 }
 .profile-value {
-    margin-left: 30px;
+    margin-left: 40px;
     float: left;
     color: #8c2887;
-    margin-top: 20px;
+    margin-top: 18px;
 }
 .profile-info {
     height: 60px;
     margin-top: 2px;
+}
+.list-element {
+    border: 1px #8c2887 solid;
+    border-radius: 5px;
+    height: 60px;
+    margin-top: 16px;
+}
+.page-name-label {
+    font-size: 20px;
+    color: #8c2887;
+    font-weight: bold;
+    margin-left: 40px;
 }
 
 

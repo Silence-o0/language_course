@@ -123,6 +123,7 @@ async function profileLoad() {
         console.log(userId)
         id = userId;
     }
+    localStorage.setItem("user_id", id);
     await userProfileLoad(id);
 }
 
@@ -143,8 +144,10 @@ async function userProfileLoad(id) {
             }
         }
     }
+    localStorage.setItem("role", role);
     let data = await response.json()
     console.log(data)
+    document.title = data.username;
     generateProfile(data, role);
 }
 
@@ -152,6 +155,9 @@ function generateProfile(data, role) {
     addDiv('Name: ', data.first_name+' '+data.last_name);
     addDiv('Username: ', data.username);
     addDiv('Email: ', data.email);
+    if (data.birth_date === null) {
+        data.birth_date = '';
+    }
     addDiv('Birthdate: ', data.birth_date);
     if (role === 'Teacher') {
         addDiv('Education: ', data.education);
@@ -184,9 +190,31 @@ function addDiv(profLabel, profValue){
     mainDiv.appendChild(cont);
 }
 
+function addDivWithLink(profLabel, profValue, link){
+    const cont = document.createElement("div");
+    cont.classList.add("container-fluid");
+    cont.classList.add("profile-info");
+
+    const label = document.createElement("p");
+    label.classList.add("profile-label");
+    const labelNode = document.createTextNode(profLabel);
+    const value = document.createElement("a");
+    value.classList.add("profile-value");
+    value.href = link;
+    const valueNode = document.createTextNode(profValue);
+
+    label.appendChild(labelNode);
+    value.appendChild(valueNode);
+
+    cont.appendChild(label);
+    cont.appendChild(value);
+
+    const mainDiv = document.getElementById('mainDiv');
+    mainDiv.appendChild(cont);
+}
+
 function addMinutes(date, minutes) {
   date.setMinutes(date.getMinutes() + minutes);
-
   return date;
 }
 
@@ -261,8 +289,120 @@ async function updateTokens() {
             localStorage.setItem("accessTokenTime", accessDate.toString());
         }
         else {
-            window.location.href = "/login";
+        //    window.location.href = "/login";
             throw new Error('Not valid refresh token.')
         }
     }
+}
+
+async function logout() {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("accessTokenTime");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("refreshTokenTime");
+}
+
+async function groupsListLoad() {
+    let response = await makeRequestAuthorized('/api/groups/', 'get');
+    let data = await response.json();
+    console.log(data)
+
+    for (const obj of data) {
+        console.log(obj);
+
+        let responseLang = await makeRequestAuthorized('/api/languages/'+obj.language, 'get');
+        let dataLang = await responseLang.json();
+        let text = dataLang.name + ' ' + obj.lang_level;
+        addListElement(text);
+    }
+}
+
+function addListElement(text) {
+    const cont = document.createElement("div");
+    cont.classList.add("container");
+    cont.classList.add("list-element");
+
+    const groupName = document.createElement("p");
+    groupName.classList.add("profile-value");
+    const valueNode = document.createTextNode(text);
+
+    groupName.appendChild(valueNode);
+    cont.appendChild(groupName);
+
+    const mainDiv = document.getElementById('mainDiv');
+    mainDiv.appendChild(cont);
+}
+
+async function listLoad() {
+    const url = document.URL;
+    const index = url.indexOf('groups');
+    const result = url.slice(index);
+
+    console.log(result);
+    const arrayOfParams = result.split('/');
+    console.log(arrayOfParams);
+
+    switch (arrayOfParams.length) {
+        case 2:
+            document.title = 'Groups';
+            await groupsListLoad();
+            break;
+        case 3:
+            await groupInfoListLoad(arrayOfParams[1]);
+            break;
+        case 4:
+            await studentInfoListLoad(arrayOfParams[1], arrayOfParams[2]);
+            break;
+        case 5:
+            await markInfoLoad();
+            break;
+    }
+}
+
+async function groupInfoListLoad(group_id) {
+    let response = await makeRequestAuthorized('/api/groups/'+group_id, 'get');
+    let data = await response.json();
+    console.log(data);
+
+    let responseLang = await makeRequestAuthorized('/api/languages/'+data.language, 'get');
+    let dataLang = await responseLang.json();
+    console.log(dataLang);
+    let name = dataLang.name + ' ' +  data.lang_level;
+    console.log(name);
+    document.title = name;
+
+    const mainLabel = document.createElement("p");
+    mainLabel.classList.add("page-name-label");
+    const labelNode = document.createTextNode(name);
+    mainLabel.appendChild(labelNode);
+    const mainDiv = document.getElementById('mainDiv');
+    mainDiv.appendChild(mainLabel);
+
+    let responseTeacher = await makeRequestAuthorized('/api/teachers/'+data.teacher, 'get');
+    let dataTeacher = await responseTeacher.json();
+    console.log(dataTeacher);
+
+    addDivWithLink('Teacher: ', dataTeacher.first_name + ' ' + dataTeacher.last_name, '/profile/'+data.teacher);
+    let responseStudent = await makeRequestAuthorized('/api/students/', 'get');
+    let dataStudent = await responseStudent.json();
+    console.log(dataStudent)
+
+    for (const obj of dataStudent) {
+        console.log(obj);
+
+        addListElement(obj.first_name + ' ' + obj.last_name);
+    }
+}
+
+async function studentInfoListLoad(group_id, student_id) {
+
+
+    console.log('student')
+
+}
+
+async function markInfoLoad() {
+    document.title = 'Groups';
+    console.log('markdetail')
+
 }
